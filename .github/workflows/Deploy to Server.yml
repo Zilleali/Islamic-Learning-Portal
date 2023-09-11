@@ -1,0 +1,24 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Configure SSH key
+      run: |
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -t rsa $SERVER_IP_ADDRESS >> ~/.ssh/known_hosts
+
+    - name: Deploy to Server
+      run: |
+        rsync -r --delete-after --quiet $GITHUB_WORKSPACE/* $SSH_USERNAME@$SERVER_IP_ADDRESS:$SERVER_DEPLOY_PATH
